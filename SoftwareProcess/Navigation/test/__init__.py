@@ -24,7 +24,7 @@ print subangle1
 print("comparision of angles")
 print compAngle1
 anglestring1=angle2.getString()
-print("convertedvstring mode angle")
+print("converted string mode angle")
 print anglestring1
 #print angle2Degrees
 
