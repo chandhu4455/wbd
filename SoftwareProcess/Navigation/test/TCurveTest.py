@@ -2,6 +2,7 @@ import unittest
 import Navigation.prod.TCurve as T
 import math
 
+#from scipy import special
 
 class TCurveTest(unittest.TestCase):
 
@@ -28,12 +29,13 @@ class TCurveTest(unittest.TestCase):
 #                missing n
 #
 # Happy path 
+
     def test100_010_ShouldConstruct(self):
         self.assertIsInstance(T.TCurve(self.nominalN), T.TCurve)
         # additional tests are for boundary value coverage
         self.assertIsInstance(T.TCurve(2), T.TCurve)
         self.assertIsInstance(T.TCurve(29), T.TCurve)
-        
+       
 # Sad path  
     def test100_910_ShouldRaiseExceptionNonintegerN(self):
         expectedString = "TCurve.__init__:"
@@ -88,11 +90,12 @@ class TCurveTest(unittest.TestCase):
 #                out-of-bounds n  t<0.0
 #                non-numeric t    t="abc"
 #        tails:  invalid tails    tails = 3
-#
+
 # Happy path
     def test600_010ShouldCalculateNominalCase1Tail(self):
         myT = T.TCurve(7)
         self.assertAlmostEquals(myT.p(1.8946, 1), .95, 3)
+     
         
     def test600_020ShouldCalculateNominalCase2Tail(self):
         myT = T.TCurve(7)
