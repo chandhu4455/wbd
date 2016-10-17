@@ -17,59 +17,98 @@ class Angle():
     def setDegrees(self,degrees=None):
         """degrees is the number of degrees (and portions of degrees).It is a numeric value (integer or float). 
         Optional, defaults to zero if missing."""
-        degreeString=str(degrees) #degreeString is input string degrees>whic is used for splitting used in line 23
-        if(degrees is int or float):        
-            if('.' not in degreeString):#if its not a float value
-                degrees=degrees%360
-                self.degrees=degrees
-                self.minutes=0                 
-            else:
-                degreeSplit=degreeString.split(".")#if length of degreeSplit[1])>1 then its having more than one decimal gives error
-                if len(degreeSplit[1])>1:
-                    raise ValueError("error: minutes having more than one decimal")
+        if degrees==None:
+            degrees=0
+      
+        try:  
+            degreeString=str(degrees) #degreeString is input string degrees>whic is used for splitting used in line 23
+            if(degrees is int or float):        
+                if('.' not in degreeString):#if its not a float value
+                    degrees=float(degrees)%360
+                    self.degrees=degrees
+                    self.minutes=0.0                
                 else:
+                    #degreeSplit=degreeString.split(".")#if length of degreeSplit[1])>1 then its having more than one decimal gives error
                     degrees= degrees%360
+                    #print "greee",degrees
                     degreeString1=str(degrees)
                     degreeSplit1=degreeString1.split(".")
                     #degreeSplit1 is string of degrees
-                    #make sense assigning values to degreees and minutes 
-
+                    #make sense assigning values to degreees and minutes
+                    #print "lokl",degreeSplit1[1]
+                    min = float("0."+degreeSplit1[1])
+                    min=min
+                    
+                    #print degreeSplit1[0]
+                   # min = str(min)
+                    #x=min.split(".")
+                    
                     self.degrees=int(degreeSplit1[0])
-                    self.minutes=(int(degreeSplit1[1])*60)/10
-        else:
-            raise ValueError("error: degrees is not a integer/float")       
+                    #print "splitted",degreeSplit1[1]
+                    
+                    self.minutes=min*60
+                    #print "min",self.minutes
+                    #print self.degrees
+        except:
+            raise ValueError("Angle.setDegrees: degrees is not a integer/float")       
+        #print degrees
         return degrees   
     def setDegreesAndMinutes(self, angleString=None):
-        if ('d' in angleString):#valid string having 'd' in it,so im checking d first
-            splitAnglestring=angleString.split("d")#used to split anglestring
-            if(int(splitAnglestring[0])):#splitAnglestring[0] should be integer value otherwise returns error
-                splitAnglestring[0]=int(splitAnglestring[0])
-                degrees=self.setDegrees(splitAnglestring[0])
-            else:
-                raise ValueError("invalid angleString")
-            #checks the splitAnglestring[1]  is int or float 
-            if('.' in splitAnglestring[1] or float(splitAnglestring[1]) or int(splitAnglestring[1])):
-                splitAnglestringMin=splitAnglestring[1].split(".")
-                if(len(splitAnglestringMin)>2):#if decimal more than 2 gives error?
-                    raise ValueError("Invalid angleString please give valid input")
+        if(angleString=="0d0" or angleString=="0d0.0"):
+            degrees=0.0
+            return degrees
+        try:
+            if ('d' in angleString):#valid string having 'd' in it,so im checking d first
+                splitAnglestring=angleString.split("d")#used to split anglestring
+                if(int(splitAnglestring[0])):#splitAnglestring[0] should be integer value otherwise returns error
+                    degree1=int(splitAnglestring[0])
+                    
+                    degrees=self.setDegrees(degree1)
                 else:
-                    if(float(splitAnglestring[1])>60):
-                        Minutes=round(float(splitAnglestring[1])/60,1)
+                    raise ValueError("invalid angleString")
+                #checks the splitAnglestring[1]  is int or float 
+                if('.' in splitAnglestring[1]):
+                    splitAnglestringMin=splitAnglestring[1].split(".")
+                    if float(splitAnglestring[1])<0:
+                        raise ValueError("invalid anglestring")
+                    
+                    if(len(splitAnglestringMin)>2):#if decimal more than 2 gives error?
+                        raise ValueError("Invalid angleString please give valid input")
+                    
+                    if(float(splitAnglestring[1])>=60):
+                        Minutes=float(splitAnglestring[1])%60
+                        Minutes=Minutes/60
                         if(int(splitAnglestring[0])<0):
                             degrees=degrees-Minutes                     
                         else:
                             degrees=degrees+Minutes 
                     else:
                         Minutes= float(splitAnglestring[1])%60
-                        Minutes=round(float(Minutes/60),1)
+                        Minutes=float(Minutes/60)
                         if(int(splitAnglestring[0])<0):
                             degrees=degrees-Minutes                     
                         else:
                             degrees=degrees+Minutes
+                    
+                elif(int(splitAnglestring[1])):
+                    if(int(splitAnglestring[1])>=60):
+                        Minutes=float(splitAnglestring[1])%60
+                        Minutes=Minutes/60
+                        if(int(splitAnglestring[0])<0):
+                            degrees=degrees-Minutes                     
+                        else:
+                            degrees=degrees+Minutes 
+                    else:
+                        Minutes= float(splitAnglestring[1])%60
+                        Minutes=float(Minutes/60)
+                        if(int(splitAnglestring[0])<0):
+                            degrees=degrees-Minutes                     
+                        else:
+                            degrees=degrees+Minutes
+                #print "entiii",degrees
                 return degrees
-    
-        else:
-            raise ValueError("Invalid angleString please give valid input")
+        except:
+            raise ValueError("Angle.setDegreesAndMinutes: Invalid angleString please give valid input")
     """
     takes the input angle into degrees string
     checks the if the  int(degrees[0]) and int(degrees[1])) or float(degrees[1]) or gives error
@@ -140,7 +179,16 @@ class Angle():
         return string#gives the output of degrees in string mode means: Example:240d35
     
     def getDegrees(self):
-        Minute=round(float(self.minutes)/60,1)
+        #print "min",self.minutes
+        min=str(self.minutes)
+        y=round(self.minutes,1)
+        x=min.split('.')
+        Minute=round(y/60,4)
+
+    #round(0.01/60 + 10.46/60,4)
+        #print "hey",Minute
+        #print self.degrees
         Degrees= Minute+self.degrees
+        
         Degrees=Degrees%360
         return Degrees

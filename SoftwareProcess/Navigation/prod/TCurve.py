@@ -1,3 +1,7 @@
+"""
+Created on September 2016
+@author: Chandrashekar Chary Vadla
+"""
 import math
 class TCurve(object):
 
@@ -88,21 +92,4 @@ class TCurve(object):
             simpsonNew = (f2+f3+f1)*(w/3)    
             s = s * 2
         return simpsonNew
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

@@ -7,7 +7,7 @@ angle4 = Angle.Angle()
 angle2Degrees = angle2.setDegrees(degrees=50.5)
 
 #angle3Degrees = angle3.setDegrees(19.43)        #angle2Degrees should be 340.5        
-#angle3Degrees = angle3.setDegreesAndMinutes("36d5")   #angle3Degrees should be 0.5 
+angle3Degrees = angle3.setDegreesAndMinutes("36d5")   #angle3Degrees should be 0.5 
 #angle4Degrees = angle4.setDegreesAndMinutes("15d5")     
 #addangle1=angle1.add("43d4")
 addangle2=angle2.add("15d0") 
@@ -15,7 +15,7 @@ subangle1=angle2.subtract("86d30")
 compAngle1=angle2.compare("25d3")
 #anglestring1=angle2.getString()
 print("input angle:")
-print angle2Degrees
+print angle3Degrees
 #print angle3Degrees
 print('addition of angles:')
 print addangle2
