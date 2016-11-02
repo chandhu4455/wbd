@@ -2,7 +2,7 @@
 Created on August 30,2016
 @author: Chandrashekar Chary Vadla
 """
-from test.test_socket import try_address
+# from test.test_socket import try_address
 from math import degrees
 from macpath import split
 
@@ -13,7 +13,7 @@ class Angle():
         #self.angle = ...       set to 0 degrees 0 minutes
         self.degrees = 0
         self.minutes = 0.0
-    ""     
+
     def setDegrees(self,degrees=None):
         """degrees is the number of degrees (and portions of degrees).It is a numeric value (integer or float). 
         Optional, defaults to zero if missing."""
@@ -52,7 +52,9 @@ class Angle():
         except:
             raise ValueError("Angle.setDegrees: degrees is not a integer/float")       
         #print degrees
-        return degrees   
+        return degrees
+
+    
     def setDegreesAndMinutes(self, angleString=None):
         if(angleString=="0d0" or angleString=="0d0.0"):
             degrees=0.0
@@ -63,7 +65,7 @@ class Angle():
                 if(int(splitAnglestring[0])):#splitAnglestring[0] should be integer value otherwise returns error
                     degree1=int(splitAnglestring[0])
                     
-                    degrees=self.setDegrees(degree1)
+                    self.degrees=self.setDegrees(degree1)
                 else:
                     raise ValueError("invalid angleString")
                 #checks the splitAnglestring[1]  is int or float 
@@ -71,42 +73,47 @@ class Angle():
                     splitAnglestringMin=splitAnglestring[1].split(".")
                     if float(splitAnglestring[1])<0:
                         raise ValueError("invalid anglestring")
+                    else:
+                        self.minutes = float(splitAnglestring[1])
                     
                     if(len(splitAnglestringMin)>2):#if decimal more than 2 gives error?
                         raise ValueError("Invalid angleString please give valid input")
-                    
-                    if(float(splitAnglestring[1])>=60):
-                        Minutes=float(splitAnglestring[1])%60
-                        Minutes=Minutes/60
-                        if(int(splitAnglestring[0])<0):
-                            degrees=degrees-Minutes                     
-                        else:
-                            degrees=degrees+Minutes 
                     else:
-                        Minutes= float(splitAnglestring[1])%60
-                        Minutes=float(Minutes/60)
-                        if(int(splitAnglestring[0])<0):
-                            degrees=degrees-Minutes                     
-                        else:
-                            degrees=degrees+Minutes
+                        self.minutes = float(splitAnglestring[1])
                     
-                elif(int(splitAnglestring[1])):
-                    if(int(splitAnglestring[1])>=60):
-                        Minutes=float(splitAnglestring[1])%60
-                        Minutes=Minutes/60
-                        if(int(splitAnglestring[0])<0):
-                            degrees=degrees-Minutes                     
-                        else:
-                            degrees=degrees+Minutes 
-                    else:
-                        Minutes= float(splitAnglestring[1])%60
-                        Minutes=float(Minutes/60)
-                        if(int(splitAnglestring[0])<0):
-                            degrees=degrees-Minutes                     
-                        else:
-                            degrees=degrees+Minutes
+                    # if(float(splitAnglestring[1])>=60):
+                    #     Minutes=float(splitAnglestring[1])%60
+                    #     self.minutes=Minutes/60
+                    #     if(int(splitAnglestring[0])<0):
+                    #         degrees=degrees-self.minutes
+                    #     else:
+                    #         degrees=degrees+Minutes
+                    # else:
+                    #     Minutes= float(splitAnglestring[1])%60
+                    #     self.minutes=float(Minutes/60)
+                    #     if(int(splitAnglestring[0])<0):
+                    #         degrees=degrees-self.minutes
+                    #     else:
+                    #         degrees=degrees+Minutes
+                    
+                else:
+                    self.minutes = float(splitAnglestring[1])
+                #     if(int(splitAnglestring[1])>=60):
+                #         Minutes=float(splitAnglestring[1])%60
+                #         Minutes=Minutes/60
+                #         if(int(splitAnglestring[0])<0):
+                #             degrees=degrees-Minutes
+                #         else:
+                #             degrees=degrees+Minutes
+                #     else:
+                #         Minutes= float(splitAnglestring[1])%60
+                #         Minutes=float(Minutes/60)
+                #         if(int(splitAnglestring[0])<0):
+                #             degrees=degrees-Minutes
+                #         else:
+                #             degrees=degrees+Minutes
                 #print "entiii",degrees
-                return degrees
+                return (self.degrees + (self.minutes / 60)) % 360
         except:
             raise ValueError("Angle.setDegreesAndMinutes: Invalid angleString please give valid input")
     """
@@ -174,8 +181,8 @@ class Angle():
         
     def getString(self):
         degrees=str(self.degrees)
-        minutes=str(self.minutes)
-        string=degrees+"d"+minutes
+        minutes=float(self.minutes)
+        string=degrees+"d"+ str(round(minutes,1))
         return string#gives the output of degrees in string mode means: Example:240d35
     
     def getDegrees(self):
@@ -183,7 +190,7 @@ class Angle():
         min=str(self.minutes)
         y=round(self.minutes,1)
         x=min.split('.')
-        Minute=round(y/60,4)
+        Minute=round(y/60,1)
 
     #round(0.01/60 + 10.46/60,4)
         #print "hey",Minute
@@ -192,3 +199,10 @@ class Angle():
         
         Degrees=Degrees%360
         return Degrees
+
+if __name__ == "__main__":
+    f = Angle()
+    f.setDegreesAndMinutes("015d4.9")
+    # f.setDegrees(45.15)
+    print f.getString()
+    print f.minutes

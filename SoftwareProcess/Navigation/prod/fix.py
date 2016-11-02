@@ -5,19 +5,19 @@ Created on October 8,2016
 
 import xml.dom.minidom as FT
 import xml.etree.ElementTree as ET
-from xml.dom.minidom import *
 import math
 from datetime import *
 from tzlocal import *
 import pytz
 import datetime as dt
+import os
+import Angle
+from math import degrees, radians, tan
 
-import Angle as Angle
-from math import degrees
+
 class Fix():
     def __init__(self,logFile="log.txt"):                
-        #logFile=str(logFile)
-        #print logFile
+        self.error = 0
         
         self.logFile=logFile
         if(logFile==None):
@@ -29,20 +29,19 @@ class Fix():
         if(len(logFile)>=1):
             file1=open(logFile,"a")
             self.file1=file1
-            #print "open"
             '''
             you can find your log.txt in workspace->test directory
             or you can use directory method
             file=open("C:\\Users\ChandrashekarChary\\Desktop\\fold\\log.txt","ab")
             '''
-            log="LOG:\t"+str(self.TimeNow() )+":\tStart of Log\n"
+            fileFullPath = os.path.abspath(self.logFile)
+            log="LOG: "+ self.TimeNow() + " Log file:" + "\t" + fileFullPath + "\n"
             self.file1.write(log)
             
         
     def setSightingFile(self,sightingFile):  
         try:
             self.xmlFile=sightingFile 
-            #x=self.TimeNow() 
             '''
             if you want to use directory method Uncomment these two lines 
             and comment below two lines  
@@ -50,171 +49,332 @@ class Fix():
             log1="LOG:\t"+str(self.TimeNow())+":\t"+"Start of sighting file:\t"+Filename[-1]+"\n"
             '''
             "which will check the existance of file"
-            xmlfile=open(self.xmlFile,'r')
-            print "file exists"
+            xmlfile = open(self.xmlFile,'r')
             xmlfile.close()
-            log1="LOG:\t"+str(self.TimeNow())+":\t"+"Start of sighting file:\t"+sightingFile+"\n"
-            #print log1
+            fileFullPath = os.path.abspath(self.xmlFile)
+            log1="LOG: "+ self.TimeNow()+" Sighting file:" + "\t" + fileFullPath + "\n"
             self.file1.write(log1)
-            return(False)
+            return fileFullPath
+
         except:
             raise ValueError("File not exists")
-            return(True)
+
+
     def TimeNow(self):
         now = dt.datetime.utcnow()
         time = datetime(now.year, now.month,now.day,now.hour,now.minute,now.second, tzinfo=pytz.utc)
         Zonetime=time.astimezone(get_localzone())
-        return Zonetime
+        return str(Zonetime)
+
+    def setAriesFile(self, ariesFile):
+        # setAriesFile method receives parameter ariesFile as string.
+        # Sets the received text file as the aries file.
+
+        # split filename with '.'
+        actualFileName = ariesFile.split(".")[0]
+        # checking filename without extension if < 1  than raise error: Received Filename is invalid.
+        if (len(actualFileName)) < 1:
+            self.error += 1
+            raise (ValueError("Fix.setAriesFile:  Received Filename is invalid"))
+        # set ariesfile as global.
+        self.ariesFile = actualFileName + ".txt"
+        # get full path of aries file.
+        fileFullPath = os.path.abspath(self.ariesFile)
+        # make a string of filename and file full path with current datetime.
+        logEntry = ("LOG: " + self.TimeNow() + " Aries file:\t" + fileFullPath + " \n")
+        # write a string in logfile.
+        self.file1.write(logEntry)
+        # checking ariesfile is exist or not.
+        try:
+            f = open(self.ariesFile, "r")
+            f.close()
+        except Exception as e:
+            raise (ValueError("Fix.setAriesFile:  Aries file could not be opened"))
+        # return full path of aries file.
+        return fileFullPath
+
+
+    def setStarFile(self, starFile):
+        # setStarFile method receives parameter starFile as string.
+        # Sets the received text file as the stars file.
+
+        # split filename with '.'
+        actualFileName = starFile.split(".")[0]
+        # checking filename without extension if < 1  than raise error: Received Filename is invalid.
+        if (len(actualFileName)) < 1:
+            self.error += 1
+            raise (ValueError("Fix.setStarFile:  Received Filename is invalid"))
+
+        # set ariesfile as global.
+        self.starFile = actualFileName + ".txt"
+        # get full path of aries file.
+        fileFullPath = os.path.abspath(self.starFile)
+        # make a string of filename and file full path with current datetime.
+        logEntry = ("LOG: " + self.TimeNow() + " Star file:\t" + fileFullPath + " \n")
+        # write a string in logfile.
+        self.file1.write(logEntry)
+        # checking stars file is exist or not.
+        try:
+            f = open(self.starFile, "r")
+            f.close()
+        except Exception as e:
+            raise (ValueError("Fix.setStarFile:  Stars file could not be opened"))
+        # return full path of aries file.
+        return fileFullPath
+
     def getSightings(self):
         approximateLatitude = "0d0.0"            
         approximateLongitude = "0d0.0"
-        LatitudeLongitude = (approximateLatitude,approximateLongitude);
+        dictList = []
+        LatitudeLongitude = (approximateLatitude,approximateLongitude)
         ############
         sightings = FT.parse(self.xmlFile).documentElement.getElementsByTagName("sighting")
         #Which will check the root of the file(which should be 'fix' tag
         root = ET.parse(self.xmlFile).getroot()
         fileTag=root.tag
-        #print fileTag
-      
-        if(fileTag=='fix'): 
-            #sightingsNum used to know about which sighting we are in
-            sightingsNum=1
-            for i in sightings:
-                #Which searching body tag where sighting=sightingsNum
-                try:
-                    body = i.getElementsByTagName('body')[0]
-                    stringBody=body.childNodes[0].data
-                    self.body=stringBody   
-                except:
-                    raise ValueError("body tag is missing in sighting-"+str(sightingsNum))
-                
-                #Which searching date tag where sighting=sightingsNum
-                try:
-                    date = i.getElementsByTagName('date')[0]
-                    stringDate=date.childNodes[0].data
-                    self.date=stringDate
-                except:
-                    raise ValueError("date tag is missing in sighting-"+str(sightingsNum))
-                
-                #Which searching time tag where sighting=sightingsNum
-                try:
-                    time = i.getElementsByTagName('time')[0]
-                    stringTime=time.childNodes[0].data
-                    self.time=stringTime
-                except:
-                    raise ValueError("time tag is missing in sighting-"+str(sightingsNum))
-                
-                #Which searching observation tag where sighting=sightingsNum
-                try:
-                    observation = i.getElementsByTagName('observation')[0]
-                    x=observation.childNodes[0].data
-                    DegreeMin=x
-                    splitAnglestring=x.split("d")
-                    degrees=int(splitAnglestring[0])
-                    Minutes=float(splitAnglestring[1])
-                    angle1=Angle.Angle()
-                    observedAltitude=angle1.setDegreesAndMinutes(DegreeMin)
-                    #print observedAltitude
-                except:
-                    raise ValueError("observation tag is missing in sighting-"+str(sightingsNum))
-                
-                #Here we are checking the observedAltitude valid or not(in the range or not)
-                if(0<=degrees<90):
-                    self.degrees=degrees
-                else:
-                    raise ValueError("invalid observation altitude in sighting-"+str(sightingsNum))   
-                if(0<=Minutes<60):
-                    self.Minutes=Minutes
-                else:
-                    raise ValueError("invalid observation altitude in sighting-"+str(sightingsNum))
-                if(degrees==0):
-                    if(Minutes<0.1):
-                        raise ValueError("invalid observation altitude in sighting-"+str(sightingsNum)) 
-                
-                #########
-                #Which searching height tag where sighting=sightingsNum
-                try:
-                    height = i.getElementsByTagName('height')[0]
-                    stringHeight=height.childNodes[0].data
-                    self.height=stringHeight   
-                except:
-                    self.height=0.0
-                    
-                #Which searching temperature tag where sighting=sightingsNum
-                try:
-                    temperature = i.getElementsByTagName('temperature')[0]
-                    stringTemp=temperature.childNodes[0].data
-                    if(-20<=int(stringTemp)<=120):
-                        self.temperature=stringTemp
-                        #print self.temperature
+        self.errorString = ""
+        try:
+            if(fileTag=='fix'):
+                # sightingsNum used to know about which sighting we are in
+                sightingsNum=1
+                for i in sightings:
+                    entryDict = {}
+                    # Which searching body tag where sighting=sightingsNum
+                    try:
+                        body = i.getElementsByTagName('body')[0]
+                        stringBody = body.childNodes[0].data
+                        self.body = stringBody
+                    except:
+                        self.error += 1
+                        self.errorString += "body tag is missing in sighting-"+str(sightingsNum) + "\n"
+                        continue
+                    # Which searching date tag where sighting=sightingsNum
+                    try:
+                        date = i.getElementsByTagName('date')[0]
+                        stringDate=date.childNodes[0].data
+                        self.date=stringDate
+                    except:
+                        self.error += 1
+                        self.errorString += "date tag is missing in sighting-"+str(sightingsNum) + "\n"
+                        continue
+                    # Which searching time tag where sighting=sightingsNum
+                    try:
+                        time = i.getElementsByTagName('time')[0]
+                        stringTime = time.childNodes[0].data
+                        self.time = stringTime
+                    except:
+                        self.error += 1
+                        # raise ValueError("time tag is missing in sighting-"+str(sightingsNum))
+                        self.errorString += "time tag is missing in sighting-"+str(sightingsNum) + "\n"
+                        continue
+                    # Which searching observation tag where sighting=sightingsNum
+                    try:
+                        observation = i.getElementsByTagName('observation')[0]
+                        x = observation.childNodes[0].data
+                        DegreeMin = x
+                        splitAnglestring = x.split("d")
+                        degrees = int(splitAnglestring[0])
+                        Minutes = float(splitAnglestring[1])
+                        angle1 = Angle.Angle()
+                        angle1.setDegreesAndMinutes(DegreeMin)
+                        observedAltitude = angle1.degrees + (angle1.minutes / 60) % 360
+                    except Exception as e:
+                        print e
+                        self.error += 1
+                        self.errorString += "observation tag is missing or invalid in sighting-"+str(sightingsNum) + "\n"
+                        continue
+
+                    # Here we are checking the observedAltitude valid or not(in the range or not)
+                    if(0 <= degrees < 90):
+                        self.degrees=degrees
                     else:
+                        self.error += 1
+                        self.errorString += "invalid observation altitude in sighting-"+str(sightingsNum) + "\n"
+                        continue
+                    if(0 <= Minutes < 60):
+                        self.Minutes=Minutes
+                    else:
+                        self.error += 1
+                        self.errorString += "invalid observation altitude in sighting-"+str(sightingsNum) + "\n"
+                        continue
+
+                    if(degrees == 0):
+                        if(Minutes<0.1):
+                            self.error += 1
+                            self.errorString += "invalid observation altitude in sighting-"+str(sightingsNum) + "\n"
+
+                    # Which searching height tag where sighting = sightingsNum
+                    try:
+                        height = i.getElementsByTagName('height')[0]
+                        stringHeight=height.childNodes[0].data
+                        self.height=stringHeight
+                    except:
+                        self.height=0.0
+                        continue
+
+                    # Which searching temperature tag where sighting=sightingsNum
+                    try:
+                        temperature = i.getElementsByTagName('temperature')[0]
+                        stringTemp=temperature.childNodes[0].data
+                        if(-20<=int(stringTemp)<=120):
+                            self.temperature=stringTemp
+                        else:
+                            self.temperature=72
+                    except:
                         self.temperature=72
-                        #print self.temperature   
-                except:
-                    self.temperature=72
-                    #print self.temperature
-                    
-                #Which searching pressure tag where sighting=sightingsNum
-                try:
-                    pressure = i.getElementsByTagName('pressure')[0]
-                    stringPressure=pressure.childNodes[0].data
-                    if(100<=int(stringPressure)<1100):
-                        self.pressure=stringPressure
-                        #print self.pressure
-                    else:
+                        continue
+
+                    # Which searching pressure tag where sighting=sightingsNum
+                    try:
+                        pressure = i.getElementsByTagName('pressure')[0]
+                        stringPressure=pressure.childNodes[0].data
+                        if(100<=int(stringPressure)<1100):
+                            self.pressure=stringPressure
+                        else:
+                            self.pressure=1010
+                    except:
                         self.pressure=1010
-                        #print self.pressure    
-                except:
-                    self.pressure=1010
-                    
-                #Which searching horizon tag where sighting=sightingsNum
-                try:
-                    horizon = i.getElementsByTagName('horizon')[0]
-                    x=horizon.childNodes[0].data
-                    self.horizon=x
-                    #print self.horizon   
-                except:
-                    self.horizon='Natural'
-                    #print self.horizon
-                if(len(self.body)>7):
-                    logEntry="LOG:\t" + str(self.TimeNow()) + "\t" +str(self.body) + "\t" +str(self.date) + "\t" +str(self.time) + "\t" + str(observedAltitude) + "\n"
-                    #print logEntry
-                    self.file1.write(logEntry)
-                    #self.__init__Fix(logEntry)
-                else:
-                    logEntry="LOG:\t" + str(self.TimeNow()) + "\t" +str(self.body) + "\t\t" +str(self.date) + "\t" +str(self.time) + "\t" 
-                    self.file1.write(logEntry)  
-                if(self.horizon=="Natural"):
-                    dip = (-0.97 * math.sqrt(float(self.height ))) / 60 
-                    #print dip           
-                else:
-                    dip=0
-                    
-                
-                refraction = ( -0.00452 * float(self.pressure )) / ( 273 + ((float((self.temperature))-32)*5)/9) / math.atan(observedAltitude)            
-                #print "refra",refraction
-                adjustedAltitude = observedAltitude + dip + refraction 
-                adjustedAltitude=round(adjustedAltitude,3)  
-                splitAltitude=str(adjustedAltitude).split(".")
-                
-                adjustedAltitudestring=splitAltitude[0]+"d"+splitAltitude[1]
-                
-                altitudeString=str(adjustedAltitudestring) + "\n"
-                self.file1.write(altitudeString)
-                #print "adjusted",adjustedAltitude
-                print "================================"
-                print "Body=",self.body 
-                print "Horizon= ",self.horizon               
-                print "dip=",dip         
-                print "Adjusted altitude",adjustedAltitude
-                print "================================"
-                
+                        continue
+                    # Which searching horizon tag where sighting=sightingsNum
+                    try:
+                        horizon = i.getElementsByTagName('horizon')[0]
+                        x=horizon.childNodes[0].data
+                        self.horizon = x
+                    except:
+                        self.horizon = 'Natural'
+                        continue
+                    if(self.horizon == "Natural"):
+                        dip = (-0.97 * math.sqrt(float(self.height ))) / 60
+                    else:
+                        dip = 0
+
+                    # calculate refraction using pressure, temperature and oberservedAltitude.
+                    try:
+                        refraction = (-0.00452 * float(self.pressure)) / (273 + ((float((self.temperature))-32)*5)/9) / tan(radians(observedAltitude))
+
+                        # calculate adjusted Altitude.
+                        adjustedAltitude = observedAltitude + dip + refraction
+                        angle1.setDegrees(adjustedAltitude)
+                        adjustedAltitudestring=angle1.getString()
+                        # split time where received from sighting file and set hours, minutes and seconds.
+                        hours = self.time.split(":")[0]
+                        minutes = self.time.split(":")[1]
+                        sec = self.time.split(":")[2]
+                        # convert minutes in seconds
+                        s = (int(minutes) * 60) + int(sec)
+
+                        # converted sighting file date into aries file and star file date format.
+                        formatedDate = datetime.strptime(self.date, '%Y-%m-%d').strftime('%m/%d/%y')
+                        # open stars file in read mode.
+                        starData = open(self.starFile, "r")
+                        # use this flag while some tags are missing in sighting file.
+                        bodyFlag = False
+                        # create new Angle instance.
+                        angle = Angle.Angle()
+                        # read line from star file.
+                    except:
+                        self.error += 1
+                        continue
+                    for line in starData:
+                        # split line and take first element as name.
+                        name = line.split("\t")[0]
+                        # split line and take first element as date.
+                        tempDt = line.split("\t")[1]
+                        # searching in stars file.
+                        if name == self.body and tempDt == formatedDate:
+                            # if name and date match than set variable by slit line and take third element.
+                            self.SHAstar = angle.setDegreesAndMinutes(line.split("\t")[2])
+                            # split line and take forth element and set latitude.
+                            self.latitude = (line.split("\t")[3]).strip()
+                            bodyFlag = True
+                    # close stars file.
+                    starData.close()
+                    # if name and date not found in stars file than return.
+                    if(not bodyFlag):
+                        self.error += 1
+                        continue
+                    # open aries file in read mode.
+                    ariesData = open(self.ariesFile, "r")
+                    # create a new instance of angle.
+                    self.newAngle = Angle.Angle()
+                    self.newAngle2 = Angle.Angle()
+                    # read line form aries file.
+                    for line in ariesData:
+                        # split line and use first element as date
+                        tempD = line.split("\t")[0]
+                        # split line and use second element as hours
+                        tempH = line.split("\t")[1]
+                        # split line and use third element as observation.
+                        obj = line.split("\t")[2]
+                        # convert hour to integer.
+                        hours = int(hours)
+                        tempH = int(tempH)
+                        # match sighting file data and hours to aries file data.
+                        if tempD == formatedDate and tempH == hours:
+                            # set return value of setDegreesAndMinutes method to variable.
+                            self.GHAaries1 = self.newAngle.setDegreesAndMinutes(obj)
+                            # read next line and split line, use third element as next observation.
+                            nextObservation = next(ariesData).split("\t")[2]
+                            # set return value of setDegreesAndMinutes method to variable.
+                            self.GHAaries2 = self.newAngle2.setDegreesAndMinutes(nextObservation)
+                    # close aries file.
+                    ariesData.close()
+                    # calculate GHAaries.
+                    self.GHAaries = self.GHAaries1 + (self.GHAaries2 - self.GHAaries1) * float(s)/3600
+                    # calculate GHAobservation.
+                    self.GHAobservation = self.GHAaries + self.SHAstar
+
+                    # pass GHAobservation as degrees to setDegrees method.
+                    angle.setDegrees(self.GHAobservation)
+                    # set return value of getString method to GHAobservation.
+                    self.GHAobservation = angle.getString()
+
+                    # populate data in dictionary
+                    entryDict["body"] = self.body
+                    entryDict["date"] = self.date
+                    entryDict["time"] = self.time
+                    entryDict["adjustedAltitude"] = adjustedAltitudestring
+                    entryDict["latitude"] = self.latitude
+                    entryDict["longitude"] = self.GHAobservation
+                    entryDict["datetime"] = datetime.strptime(self.date + " " + self.time, "%Y-%m-%d %H:%M:%S")
+                    # add dictionary in list
+                    dictList.append(entryDict)
+            # sort data by body and datetime
+                dictList.sort(key=lambda k: k['body'])
+                dictList.sort(key=lambda k: k['datetime'])
+
+                for dictionaries in dictList:
+                    print dictionaries
+                    # make a string by current datetime, body, sighting file date and time, adjusted altitude, latitude and longitude.
+                    altitudeString = ("LOG: " + self.TimeNow() + " " + dictionaries["body"] + "\t" + dictionaries["date"] + "\t" + dictionaries["time"] + "\t" + dictionaries["adjustedAltitude"] + "\t" + dictionaries["latitude"] + "\t" + dictionaries["longitude"] + "\n")
+                    # write log entry to log file.
+                    self.file1.write(altitudeString)
+
                 sightingsNum=sightingsNum+1
-            if(sightingsNum==1):
-                raise ValueError("No sightings found in inputFile")
-            endLog="LOG:\t"+str(self.TimeNow())+":\t"+"End of sighting file:\t"+self.xmlFile+"\n"
+                if(sightingsNum==1):
+                    raise ValueError("No sightings found in inputFile")
+
+                endLog = "LOG: " + self.TimeNow() + " Sighting errors:" + "\t" + str(self.error) + "\n"
+                self.file1.write(endLog)
+            else:
+                raise ValueError("Invalid fix file")
+            # return approximateLatitude and approximateLongitude
+            return LatitudeLongitude
+
+        except:
+            print self.errorString
+            # make a string of sighting file errors.
+            endLog = "LOG: " + self.TimeNow() + " Sighting errors:" + "\t" + str(self.error) + "\n"
+            # write string to logfile.
             self.file1.write(endLog)
+            # close logfile.
             self.file1.close()
-        else:
-            raise ValueError("Invalid fix file")
-        return LatitudeLongitude
+        finally:
+            self.file1.close()
+    
+if __name__ == "__main__":
+    fix = Fix()
+    fix.setSightingFile("sight.xml")
+    fix.setStarFile("stars.txt")
+    fix.setAriesFile("aries.txt")
+    fix.getSightings()

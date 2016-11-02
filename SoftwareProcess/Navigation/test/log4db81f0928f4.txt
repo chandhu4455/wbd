@@ -1,0 +1,3 @@
+LOG: 2016-11-01 20:11:24-05:00 Log file:	C:\Users\ChandrashekarChary\SoftwareProcess\SoftwareProcess\Navigation\test\log4db81f0928f4.txt
+LOG: 2016-11-01 20:11:24-05:00 Sighting file:	C:\Users\ChandrashekarChary\SoftwareProcess\SoftwareProcess\Navigation\test\CA02_300_ValidMultipleStarSightingSameDateTime.xml
+LOG: 2016-11-01 20:11:24-05:00 Sighting errors:	3

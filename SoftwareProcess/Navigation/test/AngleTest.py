@@ -53,7 +53,6 @@ class AngleTest(unittest.TestCase):
 #                    not (int or float):  setDegrees("abc")
 #
 #    Happy path
-
     def test200_010_ShouldReturnFloat(self):
         anAngle = Angle.Angle()
         self.assertIsInstance(anAngle.setDegrees(10), float)
@@ -61,25 +60,24 @@ class AngleTest(unittest.TestCase):
     def test200_010_ShouldSetAngleUsingDegreesDefault(self):
         anAngle = Angle.Angle()
         self.assertAlmostEquals(0.0, anAngle.setDegrees(), delta=self.delta)
-      
+        
     def test200_020_ShouldSetAngleUsingDegreesNominalInt(self):
         anAngle = Angle.Angle()
         self.assertAlmostEquals(10.0, anAngle.setDegrees(10), delta = self.delta)
-    
+        
     def test200_030_ShouldSetAngleUsingDegreesNominalFloat(self):
         anAngle = Angle.Angle()
         self.assertAlmostEquals(10.5416667, anAngle.setDegrees(10.0 + 32.5/60), delta=self.delta)
-     
+        
     def test200_040_ShouldSetAngleUsingDegreesNominalPositiveModulo(self):
         anAngle = Angle.Angle()
         self.assertAlmostEquals(40.0, anAngle.setDegrees(400), delta=self.delta)
-     
+        
     def test200_050_ShouldSetAngleUsingDegreesNominalNegativeModulo(self):
         anAngle = Angle.Angle()
         self.assertAlmostEquals(319.9, anAngle.setDegrees(-400.1), delta=self.delta)
         
 #     SadPath
-
     def test200_910_ShouldRaiseExceptionOnNonIntNonFloatDegrees(self):
         expectedDiag = self.className + "setDegrees:"
         anAngle = Angle.Angle()
@@ -90,7 +88,7 @@ class AngleTest(unittest.TestCase):
 #-----------------------------------------------------------------
 #    Acceptance Test: 300
 #        Analysis - getDegrees
-#            inputs''''''''
+#            inputs
 #                none
 #            outputs
 #                a floating point number representing degrees, modulo 360, rounded to nearest 1/10 minute.
@@ -107,32 +105,31 @@ class AngleTest(unittest.TestCase):
 #                none*
 #
 #    Happy path
-
     def test300_010_ShouldReturnFloat(self):
         anAngle = Angle.Angle()
         anAngle.setDegrees(5)
         self.assertIsInstance(anAngle.getDegrees(), float)
-     
+        
     def test300_020_ShouldReturnDegreesWithNoRounding(self):
         anAngle = Angle.Angle()
         anAngle.setDegrees(30.5)
         self.assertEquals(30.5, anAngle.getDegrees())
-     
+        
     def test300_030_ShouldReturnDegreesWithRounding(self):
         anAngle = Angle.Angle()
         anAngle.setDegrees(0 + 10.46/60.0)
         self.assertAlmostEquals(10.5/60.0, anAngle.getDegrees(),places=4)  
- 
+        
     def test300_040_ShouldReturnModuloDegreesWithRounding(self):         
         anAngle = Angle.Angle()
         anAngle.setDegrees(360 + 10.46/60.0)
         self.assertAlmostEquals(10.5/60.0, anAngle.getDegrees(),places=4) 
-
+        
     def test300_050_ShouldReturnModuloNegativeDegreesWithRounding(self):         
         anAngle = Angle.Angle()
         anAngle.setDegrees(-10.44/60.0)    #359d49.56 = 359d49.6 = 359.826667
         self.assertAlmostEquals(359.826667, anAngle.getDegrees(),places=4)  
-
+           
     def test300_060_ShouldReturnModuloOfBoundaryCase(self):         
         anAngle = Angle.Angle()
         anAngle.setDegrees(360.0*2)
@@ -174,20 +171,19 @@ class AngleTest(unittest.TestCase):
     def test400_010_ShouldReturnFloat(self):
         anAngle = Angle.Angle()
         self.assertIsInstance(anAngle.setDegreesAndMinutes("0d0"), float)  
-    
+        
     def test400_020_ShouldSetAngleWithValidXDYY(self):
         anAngle = Angle.Angle()
         inputOutput = ["10d5.5", 10 + 5.5/60]
         self.assertAlmostEquals(anAngle.setDegreesAndMinutes(inputOutput[0]), inputOutput[1])    
-        #self.assertAlmostEquals(inputOutput[1], anAngle.getDegrees())     
-
+        self.assertAlmostEquals(inputOutput[1], anAngle.getDegrees())     
+            
     def test400_030_ShouldSetAngleWithValidXDY(self):
         anAngle = Angle.Angle()
         inputOutput = ["10d5", 10 + 5.0/60]
         self.assertAlmostEquals(anAngle.setDegreesAndMinutes(inputOutput[0]), inputOutput[1]) 
-        print inputOutput[1]
-        #self.assertAlmostEquals(inputOutput[1], anAngle.getDegrees())  
-      
+        self.assertAlmostEquals(inputOutput[1], anAngle.getDegrees())  
+        
     def test400_040_ShouldSetAngleWithValidXYYOver360(self):
         anAngle = Angle.Angle()
         inputOutput = ["400d0.0", 400.0%360.0]
@@ -514,7 +510,6 @@ class AngleTest(unittest.TestCase):
 
     def test800_010_ShouldReturnString(self):
         anAngle = Angle.Angle()
-
         self.assertIsInstance(anAngle.getString(), str)  
 
     def test700_020_ShouldReturnMDYYYNoRounding(self):
@@ -526,6 +521,8 @@ class AngleTest(unittest.TestCase):
         anAngle = Angle.Angle()
         anAngle.setDegrees(10.46/60.0)
         self.assertEquals("0d10.5", anAngle.getString()) 
+
+
 
 
 

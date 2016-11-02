@@ -1,0 +1,2 @@
+LOG: 2016-11-01 20:11:24-05:00 Log file:	C:\Users\ChandrashekarChary\SoftwareProcess\SoftwareProcess\Navigation\test\log178b9b120a54.txt
+LOG: 2016-11-01 20:11:24-05:00 Sighting file:	C:\Users\ChandrashekarChary\SoftwareProcess\SoftwareProcess\Navigation\test\CA02_200_ValidStarSightingFile.xml
