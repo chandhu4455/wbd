@@ -1,8 +1,3 @@
-"""
-Created on October 8,2016
-@author: Chandrashekar Chary Vadla
-"""
-
 import xml.dom.minidom as FT
 import xml.etree.ElementTree as ET
 import math
@@ -12,7 +7,7 @@ import pytz
 import datetime as dt
 import os
 import Angle
-from math import degrees, radians, tan
+from math import degrees, radians, tan, sin, cos, asin, acos
 
 
 class Fix():
@@ -39,7 +34,7 @@ class Fix():
             self.file1.write(log)
             
         
-    def setSightingFile(self,sightingFile):  
+    def setSightingFile(self,sightingFile):
         try:
             self.xmlFile=sightingFile 
             '''
@@ -66,7 +61,7 @@ class Fix():
         Zonetime=time.astimezone(get_localzone())
         return str(Zonetime)
 
-    def setAriesFile(self, ariesFile):
+    def setAriesFile(self, ariesFile=""):
         # setAriesFile method receives parameter ariesFile as string.
         # Sets the received text file as the aries file.
 
@@ -94,7 +89,7 @@ class Fix():
         return fileFullPath
 
 
-    def setStarFile(self, starFile):
+    def setStarFile(self, starFile=""):
         # setStarFile method receives parameter starFile as string.
         # Sets the received text file as the stars file.
 
@@ -122,7 +117,7 @@ class Fix():
         # return full path of aries file.
         return fileFullPath
 
-    def getSightings(self):
+    def getSightings(self,assumedLatitude="0d0.0", assumedLongitude="0d0.0"):
         approximateLatitude = "0d0.0"            
         approximateLongitude = "0d0.0"
         dictList = []
@@ -133,6 +128,30 @@ class Fix():
         root = ET.parse(self.xmlFile).getroot()
         fileTag=root.tag
         self.errorString = ""
+
+        assumedLatitudeObj = Angle.Angle()
+        hemisphere = ""
+        if "S" in assumedLatitude:
+            hemisphere = "S"
+            assumedLatitude = assumedLatitude.replace("S","")
+            assumedLatitudeObj.setDegreesAndMinutes(assumedLatitude)
+        elif "N" in assumedLatitude:
+            hemisphere = "N"
+            assumedLatitude = assumedLatitude.replace("N","")
+            assumedLatitudeObj.setDegreesAndMinutes(assumedLatitude)
+
+
+        assumedLongitudeObj = Angle.Angle()
+        assumedLongitudeObj.setDegreesAndMinutes(assumedLongitude)
+        assumedLongitude = assumedLongitudeObj.getDegrees()
+
+        if hemisphere == "S":
+            assumedLatitude = -(assumedLatitudeObj.getDegrees())
+        else:
+            assumedLatitude = assumedLatitudeObj.getDegrees()
+
+
+
         try:
             if(fileTag=='fix'):
                 # sightingsNum used to know about which sighting we are in
@@ -173,20 +192,19 @@ class Fix():
                         x = observation.childNodes[0].data
                         DegreeMin = x
                         splitAnglestring = x.split("d")
-                        degrees = int(splitAnglestring[0])
+                        deg = int(splitAnglestring[0])
                         Minutes = float(splitAnglestring[1])
                         angle1 = Angle.Angle()
                         angle1.setDegreesAndMinutes(DegreeMin)
-                        observedAltitude = angle1.degrees + (angle1.minutes / 60) % 360
+                        observedAltitude = angle1.getDegrees()
                     except Exception as e:
-                        print e
                         self.error += 1
                         self.errorString += "observation tag is missing or invalid in sighting-"+str(sightingsNum) + "\n"
                         continue
 
                     # Here we are checking the observedAltitude valid or not(in the range or not)
-                    if(0 <= degrees < 90):
-                        self.degrees=degrees
+                    if(0 <= deg < 90):
+                        self.degrees=deg
                     else:
                         self.error += 1
                         self.errorString += "invalid observation altitude in sighting-"+str(sightingsNum) + "\n"
@@ -198,10 +216,11 @@ class Fix():
                         self.errorString += "invalid observation altitude in sighting-"+str(sightingsNum) + "\n"
                         continue
 
-                    if(degrees == 0):
+                    if(deg == 0):
                         if(Minutes<0.1):
                             self.error += 1
                             self.errorString += "invalid observation altitude in sighting-"+str(sightingsNum) + "\n"
+                            continue
 
                     # Which searching height tag where sighting = sightingsNum
                     try:
@@ -210,7 +229,7 @@ class Fix():
                         self.height=stringHeight
                     except:
                         self.height=0.0
-                        continue
+                        # continue
 
                     # Which searching temperature tag where sighting=sightingsNum
                     try:
@@ -222,7 +241,7 @@ class Fix():
                             self.temperature=72
                     except:
                         self.temperature=72
-                        continue
+                        # continue
 
                     # Which searching pressure tag where sighting=sightingsNum
                     try:
@@ -234,23 +253,23 @@ class Fix():
                             self.pressure=1010
                     except:
                         self.pressure=1010
-                        continue
+                        # continue
                     # Which searching horizon tag where sighting=sightingsNum
                     try:
                         horizon = i.getElementsByTagName('horizon')[0]
                         x=horizon.childNodes[0].data
                         self.horizon = x
                     except:
-                        self.horizon = 'Natural'
-                        continue
-                    if(self.horizon == "Natural"):
+                        self.horizon = 'natural'
+                        # continue
+                    if(self.horizon == "natural"):
                         dip = (-0.97 * math.sqrt(float(self.height ))) / 60
                     else:
                         dip = 0
 
                     # calculate refraction using pressure, temperature and oberservedAltitude.
                     try:
-                        refraction = (-0.00452 * float(self.pressure)) / (273 + ((float((self.temperature))-32)*5)/9) / tan(radians(observedAltitude))
+                        refraction = (-0.00452 * float(self.pressure)) / (273 + ((float((self.temperature))-32) * 5.0 / 9.0)) / tan(radians(observedAltitude))
 
                         # calculate adjusted Altitude.
                         adjustedAltitude = observedAltitude + dip + refraction
@@ -275,13 +294,15 @@ class Fix():
                     except:
                         self.error += 1
                         continue
+                        
                     for line in starData:
+                        line = line.strip()
                         # split line and take first element as name.
                         name = line.split("\t")[0]
                         # split line and take first element as date.
                         tempDt = line.split("\t")[1]
                         # searching in stars file.
-                        if name == self.body and tempDt == formatedDate:
+                        if name == self.body and tempDt <= formatedDate:
                             # if name and date match than set variable by slit line and take third element.
                             self.SHAstar = angle.setDegreesAndMinutes(line.split("\t")[2])
                             # split line and take forth element and set latitude.
@@ -289,6 +310,7 @@ class Fix():
                             bodyFlag = True
                     # close stars file.
                     starData.close()
+                    
                     # if name and date not found in stars file than return.
                     if(not bodyFlag):
                         self.error += 1
@@ -300,6 +322,7 @@ class Fix():
                     self.newAngle2 = Angle.Angle()
                     # read line form aries file.
                     for line in ariesData:
+                        line = line.strip()
                         # split line and use first element as date
                         tempD = line.split("\t")[0]
                         # split line and use second element as hours
@@ -317,6 +340,7 @@ class Fix():
                             nextObservation = next(ariesData).split("\t")[2]
                             # set return value of setDegreesAndMinutes method to variable.
                             self.GHAaries2 = self.newAngle2.setDegreesAndMinutes(nextObservation)
+                            
                     # close aries file.
                     ariesData.close()
                     # calculate GHAaries.
@@ -329,6 +353,46 @@ class Fix():
                     # set return value of getString method to GHAobservation.
                     self.GHAobservation = angle.getString()
 
+                    LHAObj = Angle.Angle()
+                    LHAObj.setDegreesAndMinutes(self.GHAobservation)
+                    LHAObj.add(assumedLongitudeObj)
+                    LHA = LHAObj.getDegrees()
+
+                    latitudeObj = Angle.Angle()
+                    latitudeObj.setDegreesAndMinutes(self.latitude)
+
+                    sinlat1 = sin(radians(latitudeObj.getDegrees()))
+                    sinlat2 = sin(radians(assumedLatitude))
+                    sinlat = sin(radians(latitudeObj.getDegrees())) * sin(radians(assumedLatitude))
+
+                    coslat1 = cos(radians(latitudeObj.getDegrees()))
+                    coslat2 = cos(radians(assumedLatitude))
+                    cosLHA = cos(radians(LHA))
+                    coslat = coslat1 * coslat2 * cosLHA
+
+                    interDistance = sinlat + coslat
+                    correctedAltitude = degrees(asin(interDistance))
+
+                    distanceAdjustment = int(round((correctedAltitude - angle1.getDegrees()) * 60, 0))
+                    entryDict["distanceAdjustment"] = distanceAdjustment
+                    coslat1 = cos(radians(assumedLatitude))
+                    coslat2 = cos(radians(correctedAltitude))
+                    numerator = sinlat1 - sinlat2 * interDistance
+                    denominator = coslat1 * coslat2
+                    azimuthAdjustment = degrees(acos(numerator / denominator))
+
+                    azimuthAdjustmentObj = Angle.Angle()
+                    azimuthAdjustmentObj.setDegrees(abs(azimuthAdjustment))
+                    entryDict['azimuthAdjustment'] = azimuthAdjustment
+
+                    entryDict['azimuthAdjustmentStr'] = ("-" if azimuthAdjustment < 0 else "") + azimuthAdjustmentObj.getString()
+
+                    if hemisphere == "S":
+                        entryDict['assumedLatitude'] = "S" + assumedLatitudeObj.getString()
+                    else:
+                        entryDict['assumedLatitude'] = assumedLatitudeObj.getString()
+                    entryDict['assumedLongitude'] = assumedLongitudeObj.getString()
+
                     # populate data in dictionary
                     entryDict["body"] = self.body
                     entryDict["date"] = self.date
@@ -339,30 +403,58 @@ class Fix():
                     entryDict["datetime"] = datetime.strptime(self.date + " " + self.time, "%Y-%m-%d %H:%M:%S")
                     # add dictionary in list
                     dictList.append(entryDict)
-            # sort data by body and datetime
+                # sort data by body and datetime
                 dictList.sort(key=lambda k: k['body'])
                 dictList.sort(key=lambda k: k['datetime'])
 
+                sumLatPart = 0.0
+                sumLongPart = 0.0
                 for dictionaries in dictList:
-                    print dictionaries
+                    sumLatPart += dictionaries['distanceAdjustment'] * cos(radians(dictionaries['azimuthAdjustment']))
+                    sumLongPart += dictionaries['distanceAdjustment'] * sin(radians(dictionaries['azimuthAdjustment']))
                     # make a string by current datetime, body, sighting file date and time, adjusted altitude, latitude and longitude.
-                    altitudeString = ("LOG: " + self.TimeNow() + " " + dictionaries["body"] + "\t" + dictionaries["date"] + "\t" + dictionaries["time"] + "\t" + dictionaries["adjustedAltitude"] + "\t" + dictionaries["latitude"] + "\t" + dictionaries["longitude"] + "\n")
+                    # self.txtFile.write(
+                    # "LOG: " + str(local) + " " + data["body"] + "\t" + data["dt"] + "\t" + data["time"] + "\t"
+                    # + data['degrees'] + "\t" + data['latitude'] + "\t" + data['longitude'] + "\t"
+                    # + dataDict['assumedLatitude'] + "\t"
+                    # + asLongObj.getString() + "\t" + data['azimuthAdjustment'] + "\t"
+                    # + str(data['distanceAdjustment']) + "\n")
+                    
+                    altitudeString = ("LOG: " + self.TimeNow() + " " + dictionaries["body"] + "\t" + dictionaries["date"] + "\t" + dictionaries["time"] + "\t" + dictionaries["adjustedAltitude"] + "\t" + dictionaries["latitude"] + "\t" + dictionaries["longitude"] + "\t" + dictionaries['assumedLatitude'] + "\t" + dictionaries['assumedLongitude'] + "\t" + dictionaries['azimuthAdjustmentStr'] + "\t" + str(dictionaries['distanceAdjustment']) + "\n")
                     # write log entry to log file.
                     self.file1.write(altitudeString)
 
-                sightingsNum=sightingsNum+1
-                if(sightingsNum==1):
-                    raise ValueError("No sightings found in inputFile")
+                approximateLatitude = assumedLatitude + sumLatPart / 60
+                approximateLongitude = assumedLongitude + sumLongPart / 60
 
-                endLog = "LOG: " + self.TimeNow() + " Sighting errors:" + "\t" + str(self.error) + "\n"
+                approximateLatitudeObj = Angle.Angle()
+                approximateLatitudeObj.setDegrees(abs(approximateLatitude))
+                appLat = approximateLatitudeObj.getString()
+                if approximateLatitude < 0:
+                    appLat = "S" + appLat
+                elif approximateLatitude > 0:
+                    appLat = "N" + appLat
+                approximateLongitudeObj = Angle.Angle()
+                approximateLongitudeObj.setDegrees(approximateLongitude)
+                appLong = approximateLongitudeObj.getString()
+
+                sightingsNum=sightingsNum+1
+
+                errLog = "LOG: " + self.TimeNow() + " Sighting errors:" + "\t" + str(self.error) + "\n"
+                self.file1.write(errLog)
+                
+                apLatLongLog = "LOG: " + self.TimeNow() + " Approximate latitude:\t" + appLat + "\tApproximate longitude:\t" + appLong + "\n"
+                self.file1.write(apLatLongLog)
+                
+                endLog = "LOG: " + self.TimeNow() + " End of sighting file " + self.xmlFile + "\n"
                 self.file1.write(endLog)
             else:
                 raise ValueError("Invalid fix file")
+                
             # return approximateLatitude and approximateLongitude
-            return LatitudeLongitude
+            return (appLat, appLong)
 
-        except:
-            print self.errorString
+        except Exception as e:
             # make a string of sighting file errors.
             endLog = "LOG: " + self.TimeNow() + " Sighting errors:" + "\t" + str(self.error) + "\n"
             # write string to logfile.
@@ -371,10 +463,12 @@ class Fix():
             self.file1.close()
         finally:
             self.file1.close()
-    
-if __name__ == "__main__":
+
+if __name__ == '__main__':
     fix = Fix()
-    fix.setSightingFile("sight.xml")
-    fix.setStarFile("stars.txt")
+    # fix.setSightingFile("sightings1.xml")
+    fix.setSightingFile("sightings2.xml")
     fix.setAriesFile("aries.txt")
-    fix.getSightings()
+    fix.setStarFile("stars.txt")
+    # fix.getSightings("N27d59.5", "85d33.4")
+    fix.getSightings("S53d38.4", "74d35.3") # sightings2
