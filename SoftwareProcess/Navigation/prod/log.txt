@@ -8,3 +8,13 @@ LOG: 2016-12-06 14:24:29-06:00 Aldebaran	2017-03-24	23:43:12	13d42.3	16d32.3	109
 LOG: 2016-12-06 14:24:29-06:00 Sighting errors:	0
 LOG: 2016-12-06 14:24:29-06:00 Approximate latitude:	S13d28.0	Approximate longitude:	101d42.2
 LOG: 2016-12-06 14:24:29-06:00 End of sighting file sightings2.xml
+LOG: 2016-12-06 23:20:03-06:00 Log file:	C:\Users\ChandrashekarChary\SoftwareProcess\SoftwareProcess\Navigation\prod\log.txt
+LOG: 2016-12-06 23:20:03-06:00 Sighting file:	C:\Users\ChandrashekarChary\SoftwareProcess\SoftwareProcess\Navigation\prod\sightings2.xml
+LOG: 2016-12-06 23:20:03-06:00 Aries file:	C:\Users\ChandrashekarChary\SoftwareProcess\SoftwareProcess\Navigation\prod\aries.txt 
+LOG: 2016-12-06 23:20:03-06:00 Star file:	C:\Users\ChandrashekarChary\SoftwareProcess\SoftwareProcess\Navigation\prod\stars.txt 
+LOG: 2016-12-06 23:20:04-06:00 Rigil Kent.	2017-03-24	23:41:56	35d8.1	-60d53.8	318d9.9	S53d38.4	74d35.3	125d37.7	2159
+LOG: 2016-12-06 23:20:04-06:00 Acrux	2017-03-24	23:42:06	48d33.9	-63d11.3	351d30.3	S53d38.4	74d35.3	132d48.3	434
+LOG: 2016-12-06 23:20:04-06:00 Aldebaran	2017-03-24	23:43:12	13d42.3	16d32.3	109d27.8	S53d38.4	74d35.3	173d34.4	-3988
+LOG: 2016-12-06 23:20:04-06:00 Sighting errors:	0
+LOG: 2016-12-06 23:20:04-06:00 Approximate latitude:	S13d28.0	Approximate longitude:	101d42.2
+LOG: 2016-12-06 23:20:04-06:00 End of sighting file sightings2.xml

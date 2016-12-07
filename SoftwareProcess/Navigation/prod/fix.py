@@ -463,6 +463,7 @@ class Fix():
             self.file1.close()
         finally:
             self.file1.close()
+            
 
 if __name__ == '__main__':
     fix = Fix()
